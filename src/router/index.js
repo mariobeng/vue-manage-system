@@ -4,8 +4,7 @@ import Router from 'vue-router';
 Vue.use(Router);
 
 export default new Router({
-    routes: [
-        {
+    routes: [{
             path: '/',
             redirect: '/dashboard'
         },
@@ -13,11 +12,126 @@ export default new Router({
             path: '/',
             component: resolve => require(['../components/common/Home.vue'], resolve),
             meta: { title: '自述文件' },
-            children:[
-                {
+            children: [{
                     path: '/dashboard',
                     component: resolve => require(['../components/page/Dashboard.vue'], resolve),
                     meta: { title: '系统首页' }
+                },
+                {
+                    path: '/userMng',
+                    component: resolve => require(['../components/page/userMng.vue'], resolve),
+                    meta: {
+                        title: '用户管理'
+                    }
+                },
+                {
+                    path: '/productMng',
+                    component: resolve => require(['../components/page/productMng.vue'], resolve),
+                    meta: {
+                        title: '增益产品管理'
+                    }
+                },
+                {
+                    path: '/withdrawMng',
+                    component: resolve => require(['../components/page/withdrawMng.vue'], resolve),
+                    meta: {
+                        title: '提现管理'
+                    }
+                },
+                {
+                    path: '/gainMng',
+                    component: resolve => require(['../components/page/gainMng.vue'], resolve),
+                    meta: {
+                        title: '增益管理'
+                    }
+                },
+                {
+                    path: '/changeMng',
+                    component: resolve => require(['../components/page/changeMng.vue'], resolve),
+                    meta: {
+                        title: '兑换管理'
+                    }
+                },
+                {
+                    path: '/trader',
+                    component: resolve => require(['../components/page/trader.vue'], resolve),
+                    meta: {
+                        title: '承兑商管理'
+                    }
+                },
+                {
+                    path: '/buyOrder',
+                    component: resolve => require(['../components/page/buyOrder.vue'], resolve),
+                    meta: {
+                        title: '上车订单'
+                    }
+                },
+                {
+                    path: '/inviteMng',
+                    component: resolve => require(['../components/page/inviteMng.vue'], resolve),
+                    meta: {
+                        title: '邀请管理'
+                    }
+                },
+                {
+                    path: '/messageMng',
+                    component: resolve => require(['../components/page/messageMng.vue'], resolve),
+                    meta: {
+                        title: '消息管理'
+                    }
+                },
+                {
+                    path: '/coinTypeMng',
+                    component: resolve => require(['../components/page/coinTypeMng.vue'], resolve),
+                    meta: {
+                        title: '币种管理'
+                    }
+                },
+                //帮助中心子菜单 begin
+                {
+                    path: '/helpType',
+                    component: resolve => require(['../components/page/help/helpType.vue'], resolve),
+                    meta: {
+                        title: '分类管理'
+                    }
+                },
+                {
+                    path: '/helpList',
+                    component: resolve => require(['../components/page/help/helpList.vue'], resolve),
+                    meta: {
+                        title: '列表展示'
+                    }
+                },
+                //帮助中心子菜单 end
+                //配置管理 begin
+                {
+                    path: '/community',
+                    component: resolve => require(['../components/page/configMng/community.vue'], resolve),
+                    meta: {
+                        title: '社群信息'
+                    }
+                },
+                {
+                    path: '/version',
+                    component: resolve => require(['../components/page/configMng/version.vue'], resolve),
+                    meta: {
+                        title: '版本更新'
+                    }
+                },
+                //配置管理 end
+                {
+                    path: '/roleMng',
+                    component: resolve => require(['../components/page/roleMng.vue'], resolve),
+                    meta: {
+                        title: '权限管理'
+                    }
+                },
+                {
+                    path: '/opLog',
+                    component: resolve => require(['../components/page/opLog.vue'], resolve),
+                    meta: {
+                        title: '操作日志'
+                    }
                 },
                 {
                     path: '/icon',
@@ -49,13 +163,13 @@ export default new Router({
                     // markdown组件
                     path: '/markdown',
                     component: resolve => require(['../components/page/Markdown.vue'], resolve),
-                    meta: { title: 'markdown编辑器' }    
+                    meta: { title: 'markdown编辑器' }
                 },
                 {
                     // 图片上传组件
                     path: '/upload',
                     component: resolve => require(['../components/page/Upload.vue'], resolve),
-                    meta: { title: '文件上传' }   
+                    meta: { title: '文件上传' }
                 },
                 {
                     // vue-schart组件

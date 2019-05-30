@@ -44,15 +44,102 @@
                         title: '系统首页'
                     },
                     {
-                        icon: 'el-icon-lx-cascades',
-                        index: 'table',
-                        title: '基础表格'
+                        icon: 'el-icon-user-solid',
+                        index: 'userMng',
+                        title: '用户管理'
                     },
                     {
-                        icon: 'el-icon-lx-copy',
-                        index: 'tabs',
-                        title: 'tab选项卡'
+                        icon: 'el-icon-s-shop',
+                        index: 'productMng',
+                        title: '增益产品管理'
                     },
+                    {
+                        icon: 'el-icon-s-ticket',
+                        index: 'withdrawMng',
+                        title: '提现管理'
+                    },
+                    {
+                        icon: 'el-icon-s-order',
+                        index: 'gainMng',
+                        title: '增益管理'
+                    },
+                    //begin
+                    {
+                        icon: 'el-icon-s-help',
+                        index: 'changeMng',
+                        title: '兑换管理'
+                    },
+                    {
+                        icon: 'el-icon-s-cooperation',
+                        index: '5',
+                        title: '上车管理',
+                        subs: [
+                            {
+                                index: 'trader',
+                                title: '承兑商管理',
+                            },
+                            {
+                                index: 'buyOrder',
+                                title: '上车订单',
+                            }
+                        ]
+                    },
+                    {
+                        icon: 'el-icon-s-custom',
+                        index: 'inviteMng',
+                        title: '邀请管理'
+                    },
+                    {
+                        icon: 'el-icon-s-comment',
+                        index: 'messageMng',
+                        title: '消息管理'
+                    },
+                    {
+                        icon: 'el-icon-coin',
+                        index: 'coinTypeMng',
+                        title: '币种管理'
+                    },
+                    {
+                        icon: 'el-icon-question',
+                        index: '4',
+                        title: '帮助中心',
+                        subs: [
+                            {
+                                index: 'helpType',
+                                title: '分类管理',
+                            },
+                            {
+                                index: 'helpList',
+                                title: '列表展示',
+                            }
+                        ]
+                    },
+                    {
+                        icon: 'el-icon-setting',
+                        index: '8',
+                        title: '配置管理',
+                        subs: [
+                            {
+                                index: 'community',
+                                title: '社群信息',
+                            },
+                            {
+                                index: 'version',
+                                title: '版本更新',
+                            }
+                        ]
+                    },
+                    {
+                        icon: 'el-icon-lx-home',
+                        index: 'roleMng',
+                        title: '权限管理'
+                    },
+                    {
+                        icon: 'el-icon-lx-home',
+                        index: 'opLog',
+                        title: '操作日志'
+                    },
+                    //end
                     {
                         icon: 'el-icon-lx-calendar',
                         index: '3',
@@ -81,6 +168,16 @@
                                 title: '文件上传'
                             }
                         ]
+                    },
+                    {
+                        icon: 'el-icon-lx-cascades',
+                        index: 'table',
+                        title: '基础表格'
+                    },
+                    {
+                        icon: 'el-icon-lx-copy',
+                        index: 'tabs',
+                        title: 'tab选项卡'
                     },
                     {
                         icon: 'el-icon-lx-emoji',
