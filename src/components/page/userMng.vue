@@ -12,7 +12,7 @@
             </div>
             <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="index" width="50" align="center"></el-table-column>
-                <el-table-column label="账号" align="center">
+                <el-table-column prop="account" label="账号" align="center">
                 </el-table-column>
                 <el-table-column label="昵称" align="center">
                 </el-table-column>

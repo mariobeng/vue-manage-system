@@ -10,56 +10,11 @@
                 <el-button type="primary" icon="el-icon-plus">添加承兑商</el-button>
             </div>
             <div class="box">
-                <h3>支付宝</h3>
                 <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
                     <el-table-column type="index" width="50" align="center"></el-table-column>
                     <el-table-column label="用户名" align="center">
                     </el-table-column>
                     <el-table-column label="真实姓名" align="center">
-                    </el-table-column>
-                    <el-table-column label="二维码" align="center">
-                    </el-table-column>
-                    <el-table-column label="操作" align="center">
-                        <template slot-scope="scope">
-                            <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                            <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-                <div class="pagination">
-                    <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
-                    </el-pagination>
-                </div>
-            </div>
-            <div class="box">
-                <h3>微信</h3>
-                <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
-                    <el-table-column type="index" width="50" align="center"></el-table-column>
-                    <el-table-column label="昵称" align="center">
-                    </el-table-column>
-                    <el-table-column label="收款码" align="center">
-                    </el-table-column>
-                    <el-table-column label="操作" align="center">
-                        <template slot-scope="scope">
-                            <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                            <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-                <div class="pagination">
-                    <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
-                    </el-pagination>
-                </div>
-            </div>
-            <div class="box">
-                <h3>银行卡</h3>
-                <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
-                    <el-table-column type="index" width="50" align="center"></el-table-column>
-                    <el-table-column label="姓名" align="center">
-                    </el-table-column>
-                    <el-table-column label="账号" align="center">
-                    </el-table-column>
-                    <el-table-column label="开户行" align="center">
                     </el-table-column>
                     <el-table-column label="操作" align="center">
                         <template slot-scope="scope">

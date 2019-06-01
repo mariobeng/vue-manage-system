@@ -67,10 +67,10 @@ export default new Router({
                     }
                 },
                 {
-                    path: '/inviteMng',
-                    component: resolve => require(['../components/page/inviteMng.vue'], resolve),
+                    path: '/mineMng',
+                    component: resolve => require(['../components/page/mineMng.vue'], resolve),
                     meta: {
-                        title: '邀请管理'
+                        title: '矿力管理'
                     }
                 },
                 {

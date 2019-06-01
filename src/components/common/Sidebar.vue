@@ -86,8 +86,8 @@
                     },
                     {
                         icon: 'el-icon-s-custom',
-                        index: 'inviteMng',
-                        title: '邀请管理'
+                        index: 'mineMng',
+                        title: '矿力管理'
                     },
                     {
                         icon: 'el-icon-s-comment',
@@ -130,12 +130,12 @@
                         ]
                     },
                     {
-                        icon: 'el-icon-lx-home',
+                        icon: 'el-icon-lock',
                         index: 'roleMng',
                         title: '权限管理'
                     },
                     {
-                        icon: 'el-icon-lx-home',
+                        icon: 'el-icon-reading',
                         index: 'opLog',
                         title: '操作日志'
                     },

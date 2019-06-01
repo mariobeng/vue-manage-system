@@ -14,14 +14,9 @@
                 <el-table-column type="index" width="50" align="center"></el-table-column>
                 <el-table-column label="账号" align="center">
                 </el-table-column>
-                <el-table-column label="邀请人" align="center">
+                <el-table-column label="我的矿力" align="center">
                 </el-table-column>
-                <el-table-column label="被邀请人" align="center">
-                </el-table-column>
-                <el-table-column label="邀请奖励" align="center">
-                </el-table-column>
-                <el-table-column label="奖励状态" align="center">
-                    <el-tag>已发放</el-tag><el-tag>未发放</el-tag>
+                <el-table-column label="我的矿石" align="center">
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
