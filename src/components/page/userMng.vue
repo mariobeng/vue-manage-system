@@ -7,10 +7,10 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-input v-model="select_word" placeholder="关键词" class="handle-input mr10"></el-input>
+                <el-input v-model="select_word" placeholder="账号 / 昵称" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="search" @click="search">搜索</el-button>
             </div>
-            <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
+            <el-table :data="data" border class="table" ref="multipleTable">
                 <el-table-column type="index" width="50" align="center"></el-table-column>
                 <el-table-column prop="account" label="账号" align="center">
                 </el-table-column>
@@ -71,7 +71,7 @@
         name: 'basetable',
         data() {
             return {
-                url: './vuetable.json',
+                url: '',
                 tableData: [],
                 cur_page: 1,
                 select_word: '',
@@ -111,17 +111,9 @@
                 if (process.env.NODE_ENV === 'development') {
                     this.url = '/ms/table/list';
                 };
-                this.$axios.post(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.list;
-                })
             },
             search() {
                 this.is_search = true;
-            },
-            filterTag(value, row) {
-                return row.tag === value;
             },
             handleEdit(index, row) {
                 this.idx = index;

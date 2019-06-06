@@ -4,11 +4,22 @@ const Mock = require('mockjs');
 const Random = Mock.Random
 
 //mock一组数据
-const getuser = function() {
-
+const getusers = function() {
+    let userArr = []
+    for (let i = 0; i < 50; i++) {
+        let newArr = {
+            account: Random.natural(100000, 999999),
+            name: Random.cname(),
+            mymoney: Random.float(1, 99999),
+            Kinfo: Random.float(1, 10),
+            dmoney: Random.float(1, 99999),
+        }
+        userArr.push(newArr)
+    }
+    return {
+        userArr: userArr
+    }
 }
 
 
-
-
-// Mock.mock('/user/login', 'post', userLogin);
+Mock.mock('/user/api', 'get', getusers);

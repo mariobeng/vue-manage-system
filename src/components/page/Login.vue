@@ -46,30 +46,15 @@
             //     let psw = sha256(this.ruleForm.password);
             // },
             submitForm(formName) {
-                //debugger
-                let vm = this;
+                //let vm = this;
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        // axios.post('http://47.52.192.24:8080/userLogin',{
-                        //     // userName: this.ruleForm.username,
-                        //     // passWord: this.ruleForm.password
-                        //     userName: 'admin',
-                        //     passWord: '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
-                        // },
-                        // {headers:{'Content-Type':'application/x-www-form-urlencoded'}}
-                        // )
-                        // .then(function (response) {
-                        //     console.log("1");
-                        //     console.log(response);
-                        // })
-                        // .catch(function (error) {
-                        //     console.log("2");
-                        //     console.log(error);
-                        // });
-                        //debugger
+                        //密码加密
+                        let sha256 =  require("js-sha256").sha256;
+                        let psw = sha256(this.ruleForm.password);
                         let postdata = {
-                            userName: 'admin',
-                            passWord: '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'
+                            userName: this.ruleForm.username,
+                            passWord: psw
                         };
                         service({
                             url:'/userLogin',
@@ -77,15 +62,14 @@
                             data: postdata
                         })
                         .then(response=> {
-                             console.log("1");
                              console.log(response);
+                             this.$router.push('/');
+                             localStorage.setItem('ms_username',this.ruleForm.username);
                          })
                          .catch(error=>{
-                             console.log("0");
                              console.log(error);
                          });
-                        //localStorage.setItem('ms_username',this.ruleForm.username);
-                        //this.$router.push('/');
+
                     } else {
                         console.log('error submit!!');
                         return false;
