@@ -9,133 +9,202 @@
             <div class="handle-box">
                 <el-input v-model="select_word" placeholder="关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
+                <el-button type="primary" icon="el-icon-plus" @click="addDialog = true">添加分类</el-button>
             </div>
-            <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
+            <el-table :data="toptitle" border class="table" ref="multipleTable">
                 <el-table-column type="index" width="50" align="center"></el-table-column>
-                <el-table-column label="标题" align="center">
+                <el-table-column prop="fTitle" label="标题" align="center">
                 </el-table-column>
                 <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="button" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-button type="button" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                    </template>
                 </el-table-column>
             </el-table>
             <div class="pagination">
-                <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
+                <el-pagination background @current-change="CurrentChange" layout="prev, pager, next" :total="total" :page-size="pagesize">
                 </el-pagination>
             </div>
         </div>
 
-        <!-- 编辑弹出框 -->
-        <!-- <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="50px">
-                <el-form-item label="日期">
-                    <el-date-picker type="date" placeholder="选择日期" v-model="form.date" value-format="yyyy-MM-dd" style="width: 100%;"></el-date-picker>
-                </el-form-item>
-                <el-form-item label="姓名">
-                    <el-input v-model="form.name"></el-input>
-                </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
-                </el-form-item>
+        <!-- 添加分类-->
+        <el-dialog title="添加分类" :visible.sync="addDialog" width="30%">
+            <div class="form-box">
+                <el-form ref="addform" :model="addform">
+                    <el-form-item label="请输入分类名称">
+                        <el-input v-model="addform.fTitle"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="onSubmit">提交</el-button>
+                        <el-button type="info" @click="addDialog = false">取消</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
+        </el-dialog>
 
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" @click="saveEdit">确 定</el-button>
-            </span>
-        </el-dialog> -->
+        <!-- 编辑分类-->
+        <el-dialog title="编辑分类" :visible.sync="editVisible" width="30%">
+            <div class="form-box">
+                <el-form ref="">
+                    <el-form-item label="">
+                        <el-input v-model="eTitle"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="saveEdit">保存</el-button>
+                        <el-button type="info" @click="editVisible = false">取消</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
+        </el-dialog>
 
         <!-- 删除提示框 -->
-        <!-- <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
-            <div class="del-dialog-cnt">删除不可恢复，是否确定删除？</div>
+        <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
+            <div class="del-dialog-cnt">确定要删除吗？</div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="delVisible = false">取 消</el-button>
                 <el-button type="primary" @click="deleteRow">确 定</el-button>
             </span>
-        </el-dialog> -->
+        </el-dialog>
     </div>
 </template>
 
 <script>
+    import service from '../../../api/axios.js'
     export default {
         name: 'basetable',
         data() {
             return {
-                url: './vuetable.json',
-                tableData: [],
-                cur_page: 1,
-                select_word: '',
-                del_list: [],
-                is_search: false,
-                editVisible: false,
+                toptitle: [],//数据展示
+                total: 0,//数据总数
+                pagesize:10,//每页的数据条数
+                currentPage:1,//默认开始页面
+                addDialog: false,//弹框
+                addform:{
+                    fTitle:''
+                },
+                select_word: '',//搜索关键词
                 delVisible: false,
-                form: {},
-                idx: -1
+                editVisible: false,
+                msg:'',
+                eTitle:''
             }
         },
         created() {
-            this.getData();
-        },
-        computed: {
-            data() {
-                return this.tableData.filter((d) => {
-                    let is_del = false;
-                    for (let i = 0; i < this.del_list.length; i++) {
-                        if (d.name === this.del_list[i].name) {
-                            is_del = true;
-                            break;
-                        }
-                    }
-                })
-            }
+            this.getitle();
         },
         methods: {
-            // 分页导航
-            handleCurrentChange(val) {
-                this.cur_page = val;
-                this.getData();
-            },
-            // 获取 easy-mock 的模拟数据
-            getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.$axios.post(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.list;
+            getitle(){
+                service({
+                    url:'/customer/title/select/first',
+                    method:'post',
+                    data: {
+                        pageNum: this.currentPage
+                    }
                 })
+                .then(res=> {
+                    console.log(res);
+                    this.total = res.data.total;
+                    this.toptitle = res.data.list;
+                })
+                .catch(error=>{
+                    console.log(error);
+                });
             },
-            search() {
-                this.is_search = true;
+            edititle(){
+                service({
+                    url:'/customer/title/edit/first',
+                    method:'post',
+                    data: {
+                        fId: this.msg,
+                        fTitle: this.eTitle
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    if(res.data){
+                        this.$message.success('修改成功');
+                        this.editVisible = false;
+                        this.getitle();
+                    }
+                })
+                .catch(error=>{
+                    console.log(error);
+                });
             },
-            filterTag(value, row) {
-                return row.tag === value;
+            //删除分类
+            deltitle(){
+                service({
+                    url:'/customer/title/delete/first',
+                    method:'post',
+                    data: {
+                        fId: this.msg
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    if(res.data){
+                        this.$message.success('删除成功');
+                        this.delVisible = false;
+                        this.getitle();
+                    }
+                })
+                .catch(error=>{
+                    console.log(error);
+                });
             },
-            handleEdit(index, row) {
-                this.idx = index;
-                const item = this.tableData[index];
-                this.form = {
-                    name: item.name,
-                    date: item.date,
-                    address: item.address
+            // 分页导航
+            CurrentChange:function(currentPage){
+                this.currentPage = currentPage;
+                this.getitle();
+            },
+            search() {},
+            //添加分类
+            addTitle() {
+                service({
+                    url:'/customer/title/insert/first',
+                    method:'post',
+                    data: {
+                        fTitle: this.addform.fTitle
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    if(res.data){
+                        this.addDialog = false;
+                        this.addform.fTitle = '';
+                        this.$message.success('添加成功');
+                        this.getitle();
+                    }
+                })
+                .catch(error=>{
+                    console.log(error);
+                });
+            },
+            onSubmit(){
+                if(this.addform.fTitle){
+                    this.addTitle()
+                }else{
+                    this.$message.error('分类名称不能为空~');
                 }
+            },
+            //编辑分类
+            handleEdit(index, row) {
+                this.eTitle = row.fTitle;
+                this.msg = row.fId;
                 this.editVisible = true;
             },
+            saveEdit(){
+                this.edititle();
+            },
+            // 删除分类
             handleDelete(index, row) {
-                this.idx = index;
+                this.msg = row.fId;
                 this.delVisible = true;
             },
-            // 保存编辑
-            saveEdit() {
-                this.$set(this.tableData, this.idx, this.form);
-                this.editVisible = false;
-                this.$message.success(`修改第 ${this.idx+1} 行成功`);
-            },
-            // 确定删除
+            //确认删除
             deleteRow(){
-                this.tableData.splice(this.idx, 1);
-                this.$message.success('删除成功');
-                this.delVisible = false;
+                this.deltitle();
             }
         }
     }
@@ -143,6 +212,9 @@
 </script>
 
 <style scoped>
+    .form-box {
+        width: 500px;
+    }
     .handle-box {
         margin-bottom: 20px;
     }

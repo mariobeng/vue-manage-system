@@ -17,17 +17,20 @@
                 </el-table-column>
                 <el-table-column prop="coin" label="币种" align="center">
                 </el-table-column>
-                <el-table-column prop="earnPeriod" label="增益周期" align="center">
+                <el-table-column prop="earnPeriod" label="增益周期（天）" align="center">
                 </el-table-column>
                 <el-table-column prop="roteValue" label="年化收益" align="center">
                 </el-table-column>
                 <el-table-column prop="buyTime" label="申购日" align="center">
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.buyTime | dateFormat('YYYY-MM-DD HH:mm:ss') }}</span>
+                    </template>
                 </el-table-column>
                 <el-table-column prop="earnNum" label="产品总量（份）" align="center">
                 </el-table-column>
                 <el-table-column prop="status" label="状态" align="center">
-                    <template slot-scope="row">
-                        <el-tag :type="row.status | statusFilter">{{ row.status | statusText }}</el-tag>
+                    <template slot-scope="scope">
+                        <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status | statusText }}</el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
@@ -78,21 +81,24 @@
     import service from '../../api/axios.js'
     export default {
         name: 'basetable',
+        //过滤器
         filters: {
-            statusFilter(val){
-                if(val == -1){
+            //状态标签颜色
+            statusFilter(value){
+                if(value == -1){
                     return "warning"
                 }
-                if(val == 0){
+                if(value == 0){
                     return "info"
                 }
-                if(val == 1){
+                if(value == 1){
                     return ""
                 }
-                if(val == 2){
+                if(value == 2){
                     return "success"
                 }
             },
+            //状态文字显示
             statusText(val){
                 if(val == -1){
                     return "到期"
@@ -150,7 +156,6 @@
             CurrentChange:function(currentPage){
                 this.currentPage = currentPage;
                 this.getProList();
-                console.log(this.proMng.slice((this.currentPage-1)*this.pagesize,this.currentPage*this.pagesize));
             },
             search() {
                 this.is_search = true;

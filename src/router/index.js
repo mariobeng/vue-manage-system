@@ -56,7 +56,7 @@ export default new Router({
                     path: '/trader',
                     component: resolve => require(['../components/page/trader.vue'], resolve),
                     meta: {
-                        title: '承兑商管理'
+                        title: '收款信息'
                     }
                 },
                 {
@@ -119,13 +119,22 @@ export default new Router({
                     }
                 },
                 //配置管理 end
+                // 权限管理 begin
                 {
-                    path: '/roleMng',
-                    component: resolve => require(['../components/page/roleMng.vue'], resolve),
+                    path: '/account',
+                    component: resolve => require(['../components/page/role/account.vue'], resolve),
                     meta: {
-                        title: '权限管理'
+                        title: '用户列表'
                     }
                 },
+                {
+                    path: '/group',
+                    component: resolve => require(['../components/page/role/group.vue'], resolve),
+                    meta: {
+                        title: '分组管理'
+                    }
+                },
+                // 权限管理 end
                 {
                     path: '/opLog',
                     component: resolve => require(['../components/page/opLog.vue'], resolve),

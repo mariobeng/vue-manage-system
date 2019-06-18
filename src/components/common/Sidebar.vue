@@ -76,7 +76,7 @@
                         subs: [
                             {
                                 index: 'trader',
-                                title: '承兑商管理',
+                                title: '收款信息',
                             },
                             {
                                 index: 'buyOrder',
@@ -131,8 +131,18 @@
                     },
                     {
                         icon: 'el-icon-lock',
-                        index: 'roleMng',
-                        title: '权限管理'
+                        index: '9',
+                        title: '权限管理',
+                        subs: [
+                            {
+                                index: 'account',
+                                title: '用户列表',
+                            },
+                            {
+                                index: 'group',
+                                title: '分组管理',
+                            }
+                        ]
                     },
                     {
                         icon: 'el-icon-reading',

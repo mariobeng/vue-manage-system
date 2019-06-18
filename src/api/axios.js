@@ -44,11 +44,13 @@ service.interceptors.response.use(
         const res = response.data
         if (res.code !== 200) { // 后台返回码，根据自己的业务进行修改
             Message({
-                    showClose: true,
-                    message: '错误：' + res.message, //错误描述信息
-                    type: 'error'
-                })
-                //return Promise.reject('error')
+                showClose: true,
+                message: '错误：' + res.message, //错误描述信息
+                type: 'error'
+            })
+            let loading = Loading.service({});
+            loading.close();
+            //return Promise.reject('error')
         } else {
             let loading = Loading.service({});
             loading.close();

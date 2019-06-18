@@ -7,48 +7,44 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-input v-model="select_word" placeholder="账号 / 昵称" class="handle-input mr10"></el-input>
-                <el-button type="primary" icon="search" @click="search">搜索</el-button>
+                <el-input v-model="select_word" placeholder="昵称" class="handle-input mr10"></el-input>
+                <el-button type="primary" icon="search" @click="getsearch">搜索</el-button>
             </div>
-            <el-table :data="data" border class="table" ref="multipleTable">
+            <el-table :data="userList" border class="table" ref="multipleTable">
                 <el-table-column type="index" width="50" align="center"></el-table-column>
                 <el-table-column prop="account" label="账号" align="center">
                 </el-table-column>
-                <el-table-column label="昵称" align="center">
+                <el-table-column prop="userName" label="昵称" align="center">
                 </el-table-column>
-                <el-table-column label="资产" align="center">
+                <el-table-column prop="recommendCode" label="邀请码" align="center">
                 </el-table-column>
-                <el-table-column label="矿力信息" align="center">
+                <el-table-column prop="lastLoginTime" label="最后登录时间" align="center">
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.lastLoginTime | dateFormat('YYYY-MM-DD HH:mm:ss') }}</span>
+                    </template>
                 </el-table-column>
-                <el-table-column label="冻结资产额" align="center">
+                <el-table-column prop="status" label="账户状态" align="center">
+                    <template slot-scope="scope">
+                        <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status | statusText }}</el-tag>
+                    </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
-                        <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                        <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                        <el-button type="button" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-button type="button" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <div class="pagination">
-                <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
+                <el-pagination background @current-change="CurrentChange" layout="prev, pager, next" :total="total">
                 </el-pagination>
             </div>
         </div>
 
         <!-- 编辑弹出框 -->
-        <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="50px">
-                <el-form-item label="日期">
-                    <el-date-picker type="date" placeholder="选择日期" v-model="form.date" value-format="yyyy-MM-dd" style="width: 100%;"></el-date-picker>
-                </el-form-item>
-                <el-form-item label="姓名">
-                    <el-input v-model="form.name"></el-input>
-                </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
-                </el-form-item>
-
-            </el-form>
+        <el-dialog title="修改用户状态" :visible.sync="editVisible" width="30%">
+            <el-radio v-model="userStatus" label="1">正常</el-radio>
+            <el-radio v-model="userStatus" label="0">冻结</el-radio>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
                 <el-button type="primary" @click="saveEdit">确 定</el-button>
@@ -57,7 +53,7 @@
 
         <!-- 删除提示框 -->
         <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
-            <div class="del-dialog-cnt">删除不可恢复，是否确定删除？</div>
+            <div class="del-dialog-cnt">确认删除吗？</div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="delVisible = false">取 消</el-button>
                 <el-button type="primary" @click="deleteRow">确 定</el-button>
@@ -67,79 +63,158 @@
 </template>
 
 <script>
+    import service from '../../api/axios.js'
     export default {
         name: 'basetable',
+        //过滤器
+        filters: {
+            //状态标签颜色
+            statusFilter(value){
+                if(value == 1){
+                    return ""
+                }
+                if(value == 0){
+                    return "warning"
+                }
+            },
+            //状态文字显示
+            statusText(val){
+                if(val == 1){
+                    return "正常"
+                }
+                if(val == 0){
+                    return "冻结"
+                }
+            }
+        },
         data() {
             return {
-                url: '',
-                tableData: [],
-                cur_page: 1,
+                userList: [],
+                total: 0,//数据总数
+                pagesize:10,//每页的数据条数
+                currentPage:1,//默认开始页面
+                uid:'',
+                account:'',
+                userStatus:'',
+                finalStatus:1,
+
                 select_word: '',
-                del_list: [],
-                is_search: false,
                 editVisible: false,
                 delVisible: false,
-                form: {},
-                idx: -1
+                form: {}
             }
         },
         created() {
-            this.getData();
-        },
-        computed: {
-            data() {
-                return this.tableData.filter((d) => {
-                    let is_del = false;
-                    for (let i = 0; i < this.del_list.length; i++) {
-                        if (d.name === this.del_list[i].name) {
-                            is_del = true;
-                            break;
-                        }
-                    }
-                })
-            }
+            this.getList();
         },
         methods: {
             // 分页导航
             handleCurrentChange(val) {
                 this.cur_page = val;
-                this.getData();
+                this.getList();
             },
-            // 获取 easy-mock 的模拟数据
-            getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
+            // 获取列表
+            getList() {
+                service({
+                    url:'/user/getUserList',
+                    method:'post',
+                    data: {
+                        pageNum: this.currentPage
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    this.total = res.data.total;
+                    this.userList = res.data.lists;
+                })
+                .catch(error=>{
+                    console.log(error);
+                });
+            },
+            getDelete(){
+                service({
+                    url:'/user/deleteUser',
+                    method:'post',
+                    data: {
+                        uid: this.uid,
+                        account: this.account
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                })
+            },
+            // 分页导航
+            CurrentChange:function(currentPage){
+                this.currentPage = currentPage;
+                this.getList();
+            },
+            getsearch(){
+                if(this.select_word){
+                    this.search();
+                }else{
+                    this.getList();
+                }
             },
             search() {
-                this.is_search = true;
+                service({
+                    url:'/user/queryUser',
+                    method:'post',
+                    data: {
+                        userName: this.select_word,
+                        pageNum: this.currentPage
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    this.total = res.data.total;
+                    this.userList = res.data.lists;
+                })
             },
             handleEdit(index, row) {
-                this.idx = index;
-                const item = this.tableData[index];
-                this.form = {
-                    name: item.name,
-                    date: item.date,
-                    address: item.address
-                }
                 this.editVisible = true;
+                if(row.status == 1){
+                    this.userStatus = '1';
+                }else{
+                    this.userStatus = '0';
+                }
+                this.uid = row.uid;
             },
             handleDelete(index, row) {
-                this.idx = index;
                 this.delVisible = true;
+                this.uid = row.uid;
+                this.account = row.account;
             },
             // 保存编辑
             saveEdit() {
-                this.$set(this.tableData, this.idx, this.form);
-                this.editVisible = false;
-                this.$message.success(`修改第 ${this.idx+1} 行成功`);
+                if(this.userStatus == '1'){
+                    this.finalStatus = 1;
+                }else{
+                    this.finalStatus = 0;
+                }
+                service({
+                    url:'/user/changeUserStatus',
+                    method:'post',
+                    data: {
+                        uid: this.uid,
+                        status: this.finalStatus
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    if(res.data){
+                        this.editVisible = false;
+                        this.$message.success('修改成功');
+                        this.getList();
+                    }
+                })
             },
             // 确定删除
             deleteRow(){
-                this.tableData.splice(this.idx, 1);
-                this.$message.success('删除成功');
                 this.delVisible = false;
+                this.$message.success('删除成功');
+                this.getDelete();
+                this.getList();
             }
         }
     }

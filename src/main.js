@@ -5,6 +5,8 @@ import ElementUI from 'element-ui';
 import VueI18n from 'vue-i18n';
 import { messages } from './components/common/i18n';
 import Vuex from 'vuex' //引入状态管理
+// 导入格式化时间的插件
+import moment from 'moment';
 
 
 import 'element-ui/lib/theme-chalk/index.css'; // 默认主题
@@ -24,10 +26,17 @@ Vue.use(ElementUI, {
 });
 Vue.use(Vuex);
 
+// 定义全局过滤器
+Vue.filter('dateFormat', function(dataStr, pattern = "YYYY-MM-DD HH:mm:ss") {
+    moment.locale('zh-cn');
+    return moment(dataStr).format(pattern);
+})
+
 const i18n = new VueI18n({
     locale: 'zh',
     messages
 })
+
 
 
 //使用钩子函数对路由进行权限跳转
