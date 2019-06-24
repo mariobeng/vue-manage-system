@@ -50,25 +50,32 @@
                     },
                     {
                         icon: 'el-icon-s-shop',
-                        index: 'productMng',
-                        title: '增益产品管理'
+                        index: '1',
+                        title: '理财管理',
+                        subs: [
+                            {
+                                index: 'productMng',
+                                title: '产品管理',
+                            },
+                            {
+                                index: 'orderMng',
+                                title: '订单管理',
+                            }
+                        ]
                     },
                     {
                         icon: 'el-icon-s-ticket',
                         index: 'withdrawMng',
                         title: '提现管理'
                     },
-                    {
-                        icon: 'el-icon-s-order',
-                        index: 'gainMng',
-                        title: '增益管理'
-                    },
+
                     //begin
                     {
                         icon: 'el-icon-s-help',
                         index: 'changeMng',
                         title: '兑换管理'
                     },
+
                     {
                         icon: 'el-icon-s-cooperation',
                         index: '5',
@@ -87,7 +94,7 @@
                     {
                         icon: 'el-icon-s-custom',
                         index: 'mineMng',
-                        title: '矿力管理'
+                        title: '资产管理'
                     },
                     {
                         icon: 'el-icon-s-comment',

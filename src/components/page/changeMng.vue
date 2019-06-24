@@ -10,16 +10,19 @@
                 <el-input v-model="select_word" placeholder="关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
             </div>
-            <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
+            <el-table :data="changeList" border class="table" ref="multipleTable">
                 <el-table-column type="index" width="50" align="center"></el-table-column>
-                <el-table-column label="发送地址" align="center">
+                <el-table-column prop="userName" label="用户名" align="center">
                 </el-table-column>
-                <el-table-column label="接收地址" align="center">
+                <el-table-column prop="outCoin" label="转出币种" align="center">
                 </el-table-column>
-                <el-table-column label="兑换币种" align="center">
+                <el-table-column prop="inCoin" label="转入币种" align="center">
                 </el-table-column>
-                <el-table-column label="状态" align="center">
-                    <el-tag>已冻结</el-tag><el-tag>已释放</el-tag>
+                <el-table-column prop="fee" label="手续费" align="center">
+                </el-table-column>
+                <el-table-column prop="status" label="状态" align="center">
+                </el-table-column>
+                <el-table-column prop="creatTime" label="创建时间" align="center">
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
@@ -29,7 +32,7 @@
                 </el-table-column>
             </el-table>
             <div class="pagination">
-                <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
+                <el-pagination background @current-change="CurrentChange" layout="prev, pager, next" :total="total">
                 </el-pagination>
             </div>
         </div>
@@ -66,87 +69,62 @@
 </template>
 
 <script>
+    import service from '../../api/axios.js'
     export default {
         name: 'basetable',
         data() {
             return {
-                url: './vuetable.json',
-                tableData: [],
-                cur_page: 1,
+                changeList: [],
+                total: 0,//数据总数
+                pagesize:10,//每页的数据条数
+                currentPage:1,//默认开始页面
                 select_word: '',
-                del_list: [],
                 is_search: false,
                 editVisible: false,
                 delVisible: false,
-                form: {},
-                idx: -1
+                form:""
             }
         },
         created() {
-            this.getData();
-        },
-        computed: {
-            data() {
-                return this.tableData.filter((d) => {
-                    let is_del = false;
-                    for (let i = 0; i < this.del_list.length; i++) {
-                        if (d.name === this.del_list[i].name) {
-                            is_del = true;
-                            break;
-                        }
-                    }
-                })
-            }
+            this.getChange();
         },
         methods: {
             // 分页导航
-            handleCurrentChange(val) {
-                this.cur_page = val;
-                this.getData();
+            CurrentChange:function(currentPage){
+                this.currentPage = currentPage;
+                this.getChange();
             },
-            // 获取 easy-mock 的模拟数据
-            getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.$axios.post(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.list;
+            // 获取数据
+            getChange() {
+                service({
+                    url:'/exchange/getList',
+                    method:'post',
+                    data: {
+                        pageNum: this.currentPage
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    this.total = res.data.total;
+                    this.changeList = res.data.lists;
                 })
             },
             search() {
-                this.is_search = true;
-            },
-            filterTag(value, row) {
-                return row.tag === value;
+
             },
             handleEdit(index, row) {
-                this.idx = index;
-                const item = this.tableData[index];
-                this.form = {
-                    name: item.name,
-                    date: item.date,
-                    address: item.address
-                }
-                this.editVisible = true;
+
             },
             handleDelete(index, row) {
-                this.idx = index;
-                this.delVisible = true;
+
             },
             // 保存编辑
             saveEdit() {
-                this.$set(this.tableData, this.idx, this.form);
-                this.editVisible = false;
-                this.$message.success(`修改第 ${this.idx+1} 行成功`);
+
             },
             // 确定删除
             deleteRow(){
-                this.tableData.splice(this.idx, 1);
-                this.$message.success('删除成功');
-                this.delVisible = false;
+
             }
         }
     }

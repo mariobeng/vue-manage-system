@@ -26,9 +26,16 @@ export default new Router({
                 },
                 {
                     path: '/productMng',
-                    component: resolve => require(['../components/page/productMng.vue'], resolve),
+                    component: resolve => require(['../components/page/product/productMng.vue'], resolve),
                     meta: {
-                        title: '增益产品管理'
+                        title: '产品管理'
+                    }
+                },
+                {
+                    path: '/orderMng',
+                    component: resolve => require(['../components/page/product/orderMng.vue'], resolve),
+                    meta: {
+                        title: '订单管理'
                     }
                 },
                 {
@@ -38,13 +45,7 @@ export default new Router({
                         title: '提现管理'
                     }
                 },
-                {
-                    path: '/gainMng',
-                    component: resolve => require(['../components/page/gainMng.vue'], resolve),
-                    meta: {
-                        title: '增益管理'
-                    }
-                },
+
                 {
                     path: '/changeMng',
                     component: resolve => require(['../components/page/changeMng.vue'], resolve),
@@ -54,14 +55,14 @@ export default new Router({
                 },
                 {
                     path: '/trader',
-                    component: resolve => require(['../components/page/trader.vue'], resolve),
+                    component: resolve => require(['../components/page/getonCar/trader.vue'], resolve),
                     meta: {
                         title: '收款信息'
                     }
                 },
                 {
                     path: '/buyOrder',
-                    component: resolve => require(['../components/page/buyOrder.vue'], resolve),
+                    component: resolve => require(['../components/page/getonCar/buyOrder.vue'], resolve),
                     meta: {
                         title: '上车订单'
                     }
@@ -70,7 +71,7 @@ export default new Router({
                     path: '/mineMng',
                     component: resolve => require(['../components/page/mineMng.vue'], resolve),
                     meta: {
-                        title: '矿力管理'
+                        title: '资产管理'
                     }
                 },
                 {

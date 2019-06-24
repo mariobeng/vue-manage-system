@@ -2,31 +2,46 @@
     <div class="table">
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-cascades"></i> 资产管理</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-cascades"></i> 增益产品管理</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <div class="handle-box">
                 <el-input v-model="select_word" placeholder="关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
+                <el-button type="primary" icon="el-icon-plus">添加产品</el-button>
             </div>
-            <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
+            <el-table :data="proMng" border class="table" ref="multipleTable">
                 <el-table-column type="index" width="50" align="center"></el-table-column>
-                <el-table-column label="账号" align="center">
+                <el-table-column prop="earnName" label="产品名称" align="center">
                 </el-table-column>
-                <el-table-column label="矿石" align="center">
+                <el-table-column prop="coin" label="币种" align="center">
                 </el-table-column>
-                <el-table-column label="COMC" align="center">
+                <el-table-column prop="earnPeriod" label="增益周期（天）" align="center">
+                </el-table-column>
+                <el-table-column prop="roteValue" label="年化收益" align="center">
+                </el-table-column>
+                <el-table-column prop="buyTime" label="申购日" align="center">
+                    <template slot-scope="scope">
+                        <span>{{ scope.row.buyTime | dateFormat('YYYY-MM-DD HH:mm:ss') }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="earnNum" label="产品总量（份）" align="center">
+                </el-table-column>
+                <el-table-column prop="status" label="状态" align="center">
+                    <template slot-scope="scope">
+                        <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status | statusText }}</el-tag>
+                    </template>
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
-                        <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">锁仓</el-button>
-                        <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                        <el-button type="button" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-button type="button" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <div class="pagination">
-                <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
+                <el-pagination background @current-change="CurrentChange" layout="prev, pager, next" :total="total" :page-size="pagesize">
                 </el-pagination>
             </div>
         </div>
@@ -52,23 +67,60 @@
         </el-dialog> -->
 
         <!-- 删除提示框 -->
-        <!-- <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
+        <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
             <div class="del-dialog-cnt">删除不可恢复，是否确定删除？</div>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="delVisible = false">取 消</el-button>
                 <el-button type="primary" @click="deleteRow">确 定</el-button>
             </span>
-        </el-dialog> -->
+        </el-dialog>
     </div>
 </template>
 
 <script>
+    import service from '../../../api/axios.js'
     export default {
         name: 'basetable',
+        //过滤器
+        filters: {
+            //状态标签颜色
+            statusFilter(value){
+                if(value == -1){
+                    return "warning"
+                }
+                if(value == 0){
+                    return "info"
+                }
+                if(value == 1){
+                    return ""
+                }
+                if(value == 2){
+                    return "success"
+                }
+            },
+            //状态文字显示
+            statusText(val){
+                if(val == -1){
+                    return "到期"
+                }
+                if(val == 0){
+                    return "售罄"
+                }
+                if(val == 1){
+                    return "上架"
+                }
+                if(val == 2){
+                    return "售卖中"
+                }
+            }
+        },
         data() {
             return {
-                tableData: [],
-                cur_page: 1,
+                proMng: [],
+                total: 0,//数据总数
+                pagesize:10,//每页的数据条数
+                currentPage:1,//默认开始页面
+                //↓暂时无用
                 select_word: '',
                 del_list: [],
                 is_search: false,
@@ -79,44 +131,34 @@
             }
         },
         created() {
-            this.getData();
-        },
-        computed: {
-            data() {
-                return this.tableData.filter((d) => {
-                    let is_del = false;
-                    for (let i = 0; i < this.del_list.length; i++) {
-                        if (d.name === this.del_list[i].name) {
-                            is_del = true;
-                            break;
-                        }
-                    }
-                })
-            }
+            this.getProList();
         },
         methods: {
-            // 分页导航
-            handleCurrentChange(val) {
-                this.cur_page = val;
-                this.getData();
-            },
-            // 获取 easy-mock 的模拟数据
-            getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.$axios.post(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.list;
+            //数据展示
+            getProList(){
+                service({
+                    url:'/earnDescList',
+                    method:'post',
+                    data: {
+                        pageNum: this.currentPage
+                    }
                 })
+                .then(response=> {
+                    console.log(response);
+                    this.total = response.data.total;
+                    this.proMng = response.data.lists;
+                })
+                .catch(error=>{
+                    console.log(error);
+                });
+            },
+            // 分页导航
+            CurrentChange:function(currentPage){
+                this.currentPage = currentPage;
+                this.getProList();
             },
             search() {
                 this.is_search = true;
-            },
-            filterTag(value, row) {
-                return row.tag === value;
             },
             handleEdit(index, row) {
                 this.idx = index;

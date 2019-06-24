@@ -2,32 +2,41 @@
     <div class="table">
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-cascades"></i> 收款信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-cascades"></i> 增益管理</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-button type="primary" icon="el-icon-plus">添加收款信息</el-button>
+                <el-input v-model="select_word" placeholder="关键词" class="handle-input mr10"></el-input>
+                <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
             </div>
-            <div class="box">
-                <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
-                    <el-table-column type="index" width="50" align="center"></el-table-column>
-                    <el-table-column label="真实姓名" align="center">
-                    </el-table-column>
-                    <el-table-column label="收款方式" align="center">
-                    </el-table-column>
-                    <el-table-column label="操作" align="center">
-                        <template slot-scope="scope">
-                            <el-button type="text" icon="el-icon-edit" @click="handleSee(scope.$index, scope.row)">查看</el-button>
-                            <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                            <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-                        </template>
-                    </el-table-column>
-                </el-table>
-                <div class="pagination">
-                    <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
-                    </el-pagination>
-                </div>
+            <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
+                <el-table-column type="index" width="50" align="center"></el-table-column>
+                <el-table-column label="订单号" align="center">
+                </el-table-column>
+                <el-table-column label="产品名称" align="center">
+                </el-table-column>
+                <el-table-column label="账户" align="center">
+                </el-table-column>
+                <el-table-column label="数量" align="center">
+                </el-table-column>
+                <el-table-column label="期限" align="center">
+                </el-table-column>
+                <el-table-column label="收益额" align="center">
+                </el-table-column>
+                <el-table-column label="状态" align="center">
+                    <el-tag>已冻结</el-tag><el-tag>已释放</el-tag>
+                </el-table-column>
+                <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <div class="pagination">
+                <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
+                </el-pagination>
             </div>
         </div>
 
@@ -150,8 +159,7 @@
 
 </script>
 
-<style lang="scss" scoped>
-    $borderColor:#EBEEF5;
+<style scoped>
     .handle-box {
         margin-bottom: 20px;
     }
@@ -177,11 +185,5 @@
     }
     .mr10{
         margin-right: 10px;
-    }
-    .box{
-        h3{
-            margin-bottom: 10px;
-            line-height: 40px;
-        }
     }
 </style>

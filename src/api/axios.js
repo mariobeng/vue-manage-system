@@ -61,9 +61,11 @@ service.interceptors.response.use(
         console.log('error:' + error) //for debug
         Message({
             showClose: true,
-            message: '错误：' + error,
+            message: '错误：' + error + ',请重试',
             type: 'error'
         })
+        let loading = Loading.service({});
+        loading.close();
         return Promise.reject(error)
     }
 )
