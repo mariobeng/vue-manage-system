@@ -7,7 +7,7 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-input v-model="select_word" placeholder="关键词" class="handle-input mr10"></el-input>
+                <el-input v-model="select_word" placeholder="请输入币种" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
             </div>
             <el-table :data="drawList" border class="table" ref="multipleTable">
@@ -27,17 +27,17 @@
                         <span>{{ scope.row.timeStamp | dateFormat('YYYY-MM-DD HH:mm:ss') }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="txHash" label="转账hash" align="center">
+                <el-table-column prop="txHash" label="转账hash" align="center" width="260">
                 </el-table-column>
-                <el-table-column prop="status" label="状态" align="center">
+                <el-table-column prop="status" label="状态" align="center" width="110">
                     <template slot-scope="scope">
                         <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status | statusText }}</el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column label="操作" align="center" width="200">
+                <el-table-column label="操作" align="center" width="110">
                     <template slot-scope="scope">
-                        <el-button type="button" icon="el-icon-view" @click="handleEdit(scope.$index, scope.row)">查看</el-button>
-                        <el-button type="button" v-if="scope.row.status == 0" icon="el-icon-tickets" @click="handleDelete(scope.$index, scope.row)">审核</el-button>
+                        <!-- <el-button type="button" icon="el-icon-view" @click="handleEdit(scope.$index, scope.row)">查看</el-button> -->
+                        <el-button type="primary" v-if="scope.row.status == 0" icon="el-icon-tickets" @click="handleSet(scope.$index, scope.row)" plain>审核</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -46,14 +46,24 @@
                 </el-pagination>
             </div>
         </div>
-
+        <!-- 编辑弹出框 -->
+        <el-dialog title="填写交易hash" :visible.sync="editVisible" width="30%">
+            <el-form :model="form" ref="form" :rules="rules">
+                <el-form-item label="" prop="hash">
+                    <el-input v-model="form.hash" placeholder="请输入正确的交易hash" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="editVisible = false">取 消</el-button>
+                <el-button type="primary" @click="submitForm('form')">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
 <script>
     import service from '../../api/axios.js'
     export default {
-        name: 'basetable',
         //过滤器
         filters: {
             //状态标签颜色
@@ -76,13 +86,32 @@
             }
         },
         data() {
+            var validateHash = (rule, value, callback) => {
+                let reg = /^0x[a-zA-Z0-9]{64}$/;
+                if (value.match(reg)) {
+                    callback();
+                } else {
+                    callback(new Error('交易hash格式有误，请重新输入'));
+                }
+            };
             return {
                 drawList: [],
                 total: 0,//数据总数
                 pagesize:10,//每页的数据条数
                 currentPage:1,//默认开始页面
-
-                select_word: ''
+                select_word: '',
+                form: {
+                    hash: ''
+                },
+                rules: {
+                    hash: [
+                        { required: true, message: '请输入交易hash', trigger: 'blur' },
+                        { validator: validateHash, trigger: 'blur' }
+                    ]
+                },
+                editVisible: false,
+                //主键
+                hashIndex: 0
             }
         },
         created() {
@@ -111,27 +140,60 @@
             },
             search() {
                 if(this.select_word){
-
+                    this.searchCoin()
                 }else{
-                    this.getData();
+                    this.getData()
                 }
             },
-            filterTag(value, row) {
-
+            searchCoin(){
+                service({
+                    url:'/withdraw/query/RecordWithdraw',
+                    method:'post',
+                    data: {
+                        pageNum: this.currentPage,
+                        Coin: this.select_word
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    if(res.data){
+                        this.total = res.data.total;
+                        this.drawList = res.data.lists;
+                    }
+                })
             },
-            handleEdit(index, row) {
-
+            handleSet(index, row) {
+                this.editVisible = true
+                this.hashIndex = row.index
             },
-            handleDelete(index, row) {
-
+            //提交hash
+            submitForm(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.submitHash()
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
             },
-            // 保存编辑
-            saveEdit() {
-
-            },
-            // 确定删除
-            deleteRow(){
-
+            submitHash() {
+                service({
+                    url:'/withdraw/changeStatus/RecordWithdraw',
+                    method:'post',
+                    data: {
+                        index: this.hashIndex,
+                        txHash: this.form.hash
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    if(res.data){
+                        this.editVisible = false;
+                        this.$message.success('提交成功');
+                        this.getData();
+                    }
+                })
             }
         }
     }

@@ -371,7 +371,7 @@
             uploadUrl(){
                 // console.log(process.env.BASE_URL);
                 // var url = process.env.BASE_API + "/start/upload";
-                var url = 'http://47.52.192.24:8080/start/upload'
+                var url = 'http://47.52.192.24:8080/start/uploadIcon'
                 return url;
             }
         }

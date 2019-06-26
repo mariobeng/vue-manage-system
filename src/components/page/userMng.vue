@@ -181,9 +181,6 @@
                     this.total = res.data.total;
                     this.userList = res.data.lists;
                 })
-                .catch(error=>{
-                    console.log(error);
-                });
             },
             getDelete(){
                 service({

@@ -7,7 +7,7 @@ import { baseURL } from './config'
 // 创建axios实例
 const service = axios.create({
     baseURL: baseURL,
-    timeout: 50000, // 请求超时时间
+    timeout: 5000, // 请求超时时间
     transformRequest: [function(data) {
         data = qs.stringify(data);
         return data;

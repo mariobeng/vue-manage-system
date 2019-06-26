@@ -7,50 +7,55 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-input v-model="select_word" placeholder="关键词" class="handle-input mr10"></el-input>
+                <el-input v-model="select_word" placeholder="请输入账户" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
             </div>
-            <el-table :data="data" border class="table" ref="multipleTable" @selection-change="handleSelectionChange">
+            <el-table :data="mineList" border class="table" ref="multipleTable">
                 <el-table-column type="index" width="50" align="center"></el-table-column>
-                <el-table-column label="账号" align="center">
+                <el-table-column prop="account" label="账号" align="center">
                 </el-table-column>
-                <el-table-column label="矿石" align="center">
+                <el-table-column prop="mineral" label="矿石" align="center">
                 </el-table-column>
-                <el-table-column label="COMC" align="center">
+                <el-table-column prop="comc" label="COMC" align="center">
+                </el-table-column>
+                <el-table-column prop="amount" label="冻结金额" align="center">
                 </el-table-column>
                 <el-table-column label="操作" align="center">
                     <template slot-scope="scope">
-                        <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">锁仓</el-button>
-                        <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                        <el-button v-if="scope.row.comc > 0" plain type="danger" icon="el-icon-lock" @click="lockSet(scope.$index, scope.row)">锁仓</el-button>
+                        <el-button v-if="scope.row.amount > 0" plain type="primary" icon="el-icon-unlock" @click="unlockSet(scope.$index, scope.row)">释放</el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <div class="pagination">
-                <el-pagination background @current-change="handleCurrentChange" layout="prev, pager, next" :total="30">
+                <el-pagination background @current-change="CurrentChange" layout="prev, pager, next" :total="total">
                 </el-pagination>
             </div>
         </div>
-
-        <!-- 编辑弹出框 -->
-        <!-- <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="50px">
-                <el-form-item label="日期">
-                    <el-date-picker type="date" placeholder="选择日期" v-model="form.date" value-format="yyyy-MM-dd" style="width: 100%;"></el-date-picker>
+        <!-- 锁仓弹框 -->
+        <el-dialog title="编辑锁仓数量" :visible.sync="lockVisible" width="30%">
+            <el-form :model="lockform" ref="lockform" :rules="rules">
+                <el-form-item label="" prop="amount">
+                    <el-input v-model="lockform.amount" placeholder="请输入锁仓数量" autocomplete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="姓名">
-                    <el-input v-model="form.name"></el-input>
-                </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
-                </el-form-item>
-
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" @click="saveEdit">确 定</el-button>
+                <el-button @click="lockVisible = false">取 消</el-button>
+                <el-button type="primary" @click="submitForm('lockform')">确 定</el-button>
             </span>
-        </el-dialog> -->
-
+        </el-dialog>
+        <!-- 释放弹框 -->
+        <el-dialog title="编辑释放数量" :visible.sync="unlockVisible" width="30%">
+            <el-form :model="unlockform" ref="unlockform" :rules="rules">
+                <el-form-item label="" prop="mount">
+                    <el-input v-model="unlockform.mount" placeholder="请输入释放数量" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="unlockVisible = false">取 消</el-button>
+                <el-button type="primary" @click="subunlock('unlockform')">确 定</el-button>
+            </span>
+        </el-dialog>
         <!-- 删除提示框 -->
         <!-- <el-dialog title="提示" :visible.sync="delVisible" width="300px" center>
             <div class="del-dialog-cnt">删除不可恢复，是否确定删除？</div>
@@ -63,86 +68,181 @@
 </template>
 
 <script>
+    import service from '../../api/axios.js'
     export default {
-        name: 'basetable',
         data() {
+            var validLock = (rule, value, callback) => {
+                let regNum = /^\d+(\.\d+)?$/;
+                if (!value.match(regNum)) {
+                    callback(new Error('输入格式有误，请重新输入'));
+                }else if(parseFloat(value) > parseFloat(this.lockValid.comc)){
+                    callback(new Error('锁仓数量不能多于COMC数量'));
+                }else if(parseFloat(value) == 0){
+                    callback(new Error('请输入有效的数量'));
+                }else{
+                    callback()
+                }
+            };
+            var validUnlock = (rule, value, callback) => {
+                let regNum = /^\d+(\.\d+)?$/;
+                if (!value.match(regNum)) {
+                    callback(new Error('输入格式有误，请重新输入'));
+                }else if(parseFloat(value) > parseFloat(this.unlockValid.amount)){
+                    callback(new Error('释放数量不能大于已冻结金额'));
+                }else if(parseFloat(value) == 0){
+                    callback(new Error('请输入有效的数量'));
+                }else{
+                    callback()
+                }
+            };
             return {
-                tableData: [],
-                cur_page: 1,
+                mineList: [],
+                total: 0,//数据总数
+                pagesize:10,//每页的数据条数
+                currentPage:1,//默认开始页面
                 select_word: '',
-                del_list: [],
-                is_search: false,
-                editVisible: false,
-                delVisible: false,
-                form: {},
-                idx: -1
+                lockVisible: false,
+                unlockVisible: false,
+                lockform: {
+                    amount: ''
+                },
+                unlockform: {
+                    mount: ''
+                },
+                lockValid: {
+                    uid: '',
+                    comc: ''
+                },
+                unlockValid: {
+                    uid: '',
+                    amount: ''
+                },
+                rules: {
+                    amount: [
+                        { required: true, message: '请输入锁仓数量', trigger: 'blur' },
+                        { validator: validLock, trigger: 'blur' }
+                    ],
+                    mount: [
+                        { required: true, message: '请输入释放数量', trigger: 'blur' },
+                        { validator: validUnlock, trigger: 'blur' }
+                    ]
+                }
             }
         },
         created() {
             this.getData();
         },
-        computed: {
-            data() {
-                return this.tableData.filter((d) => {
-                    let is_del = false;
-                    for (let i = 0; i < this.del_list.length; i++) {
-                        if (d.name === this.del_list[i].name) {
-                            is_del = true;
-                            break;
-                        }
-                    }
-                })
-            }
-        },
         methods: {
             // 分页导航
-            handleCurrentChange(val) {
-                this.cur_page = val;
+            CurrentChange:function(currentPage){
+                this.currentPage = currentPage;
                 this.getData();
             },
-            // 获取 easy-mock 的模拟数据
+            // 获取数据
             getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.$axios.post(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.list;
+                service({
+                    url:'/user/getPropertyList',
+                    method:'post',
+                    data: {
+                        pageNum: this.currentPage
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    this.total = res.data.total;
+                    this.mineList = res.data.list;
+                })
+            },
+            searchResult() {
+                service({
+                    url:'/user/getPropertyList',
+                    method:'post',
+                    data: {
+                        pageNum: this.currentPage,
+                        account: this.select_word
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    this.total = res.data.total;
+                    this.mineList = res.data.list;
                 })
             },
             search() {
-                this.is_search = true;
-            },
-            filterTag(value, row) {
-                return row.tag === value;
-            },
-            handleEdit(index, row) {
-                this.idx = index;
-                const item = this.tableData[index];
-                this.form = {
-                    name: item.name,
-                    date: item.date,
-                    address: item.address
+                if(this.select_word){
+                    console.log(this.select_word)
+                    this.searchResult()
+                }else{
+                    this.getData()
                 }
-                this.editVisible = true;
             },
-            handleDelete(index, row) {
-                this.idx = index;
-                this.delVisible = true;
+            lockSet(index, row) {
+                this.lockVisible = true
+                this.lockValid.uid = row.uid
+                this.lockValid.comc = row.comc
             },
-            // 保存编辑
-            saveEdit() {
-                this.$set(this.tableData, this.idx, this.form);
-                this.editVisible = false;
-                this.$message.success(`修改第 ${this.idx+1} 行成功`);
+            //提交锁仓
+            submitForm(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.locked()
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
             },
-            // 确定删除
-            deleteRow(){
-                this.tableData.splice(this.idx, 1);
-                this.$message.success('删除成功');
-                this.delVisible = false;
+            locked() {
+                service({
+                    url:'/user/frozenCapital',
+                    method:'post',
+                    data: {
+                        uid: this.lockValid.uid,
+                        amount: this.lockform.amount
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    if(res.data){
+                        this.lockVisible = false;
+                        this.$message.success('锁仓成功');
+                        this.getData();
+                    }
+                })
+            },
+            //提交释放
+            unlockSet(index, row) {
+                this.unlockVisible = true
+                this.unlockValid.uid = row.uid
+                this.unlockValid.amount = row.amount
+            },
+            subunlock(formName) {
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.unlocked()
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            unlocked() {
+                service({
+                    url:'/user/thawFunds',
+                    method:'post',
+                    data: {
+                        uid: this.unlockValid.uid,
+                        amount: this.unlockform.mount
+                    }
+                })
+                .then(res=> {
+                    console.log(res);
+                    if(res.data){
+                        this.unlockVisible = false;
+                        this.$message.success('释放成功');
+                        this.getData();
+                    }
+                })
             }
         }
     }
